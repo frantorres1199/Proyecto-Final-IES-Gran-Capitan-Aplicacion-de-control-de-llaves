@@ -1,0 +1,206 @@
+<?php
+	
+function conexion()
+{
+        $conn=mysqli_connect('localhost','rafa','usuario','proyecto');
+        mysqli_set_charset($conn,'utf8');
+
+    if (!$conn)
+        {
+            mysqli_erro($conn);
+        }
+    
+    return($conn);
+    
+}
+
+
+function profesores()
+        {
+
+
+	//API URL
+	$url = 'http://cpd.iesgrancapitan.org:9034/api/profesores.php';
+
+	//create a new cURL resource
+	$ch = curl_init($url);
+
+	//setup request to send json via POST
+	$data = array(
+    	'username' => 'codexworld',
+    	'password' => '123456'
+	);
+	$payload = json_encode(array("user" => $data));
+
+	//attach encoded JSON string to the POST fields
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+
+	//set the content type to application/json
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+
+	//return response instead of outputting
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+	//execute the POST request
+	$result = curl_exec($ch);
+
+	return json_decode($result);
+
+
+        }
+
+function profesores2()
+        {
+                $conexion=conexion();
+
+		 $profesor=($_GET['profesor']);
+                if (!empty($profesor))
+                {
+
+                $consulta="SELECT DISTINCT profesor FROM `devoluciones` where profesor LIKE '%$profesor%'";
+
+                }
+                else
+                {
+
+                $consulta="SELECT DISTINCT profesor FROM `devoluciones`";
+                }
+
+                $consulta_sql=mysqli_query($conexion,$consulta);
+                $resultados=array();
+
+                while($r=mysqli_fetch_array($consulta_sql,MYSQLI_ASSOC)){
+                     $resultados[]=$r;
+                        }
+                mysqli_free_result($consulta_sql);
+                mysqli_close($conexion);
+                return $resultados;
+        }
+
+
+    
+function entrega($profesor)
+        {
+                $conexion=conexion();
+
+		$consulta="SELECT * FROM `reservas` WHERE profesor='$profesor' ORDER by hora,dia ASC";		
+              
+	        $consulta_sql=mysqli_query($conexion,$consulta);
+
+                $resultados=array();
+
+                while($r=mysqli_fetch_array($consulta_sql,MYSQLI_ASSOC)){
+                        $resultados[]=$r;
+                }
+
+                mysqli_free_result($consulta_sql);
+                mysqli_close($conexion);
+                return $resultados;
+		
+        }
+
+
+function devolucion()
+        {
+                $conexion=conexion();
+		$profesor=($_GET['profesor']);
+                $consulta="SELECT * FROM `devoluciones` WHERE profesor='".$profesor."' ORDER by hora,dia ASC";
+
+                $consulta_sql=mysqli_query($conexion,$consulta);
+
+                $resultados=array();
+
+                while($r=mysqli_fetch_array($consulta_sql,MYSQLI_ASSOC)){
+                        $resultados[]=$r;
+                }
+
+                mysqli_free_result($consulta_sql);
+                mysqli_close($conexion);
+                return $resultados;
+
+        }
+
+
+function historico()
+        {
+                $conexion=conexion();
+                $consulta="SELECT * FROM `historico` ORDER BY devolucion ASC";
+                $consulta_sql=mysqli_query($conexion,$consulta);
+                $resultados=array();
+
+                while($r=mysqli_fetch_array($consulta_sql,MYSQLI_ASSOC)){
+                     $resultados[]=$r;
+			}
+                mysqli_free_result($consulta_sql);
+                mysqli_close($conexion);
+                return $resultados;
+        }
+
+
+
+function borrado($id)
+        {
+
+                $conexion=conexion();
+                $consulta3="DELETE FROM reservas WHERE id=$id";
+                mysqli_query($conexion,$consulta3);
+		mysqli_close($conexion);
+	}
+
+
+function borrado2($id)
+        {
+                $conexion=conexion();
+                $consulta3="DELETE FROM `devoluciones` WHERE id=$id";
+                mysqli_query($conexion,$consulta3);
+                mysqli_close($conexion);
+        }
+
+function insertar2()
+	{
+	$id=($_GET['id']);
+	$aula=($_GET['aula']);
+	$dia=($_GET['dia']);
+	$hora=($_GET['hora']);
+	$profesor=($_GET['profesor']);
+	$fecha=($_GET['fecha']);
+	$descripcion=($_GET['descripcion']);
+
+	//Zona horaría 
+
+	date_default_timezone_set('Europe/Madrid');
+	$fecha_devolucion=date("d/n/Y H:i:s");
+
+	$conexion=conexion();
+	$consulta="UPDATE `historico` SET `devolucion`='".$fecha_devolucion."' WHERE id='".$id."'";
+	echo $consulta;    	
+	mysqli_query($conexion,$consulta);
+	mysqli_close($conexion);
+	}
+
+function insertar()
+        {
+        $id=($_GET['id']);
+        $aula=($_GET['aula']);
+        $dia=($_GET['dia']);
+        $hora=($_GET['hora']);
+        $profesor=($_GET['profesor']);
+        $fecha=($_GET['fecha']);
+        $descripcion=($_GET['descripcion']);;
+
+	date_default_timezone_set('Europe/Madrid');
+        $fecha_entrega=date("d/n/Y H:i:s");
+
+
+
+        $conexion=conexion();
+        $consulta="INSERT INTO `devoluciones` (`id`, `aula`, `dia`, `hora`, `profesor`, `descripcion`, `fecha`, `devolucion`) VALUES ('$id', '$aula' ,'$dia', '$hora', '".$profesor."', '$descripcion', '$fecha',NULL)";
+	$consulta2="INSERT INTO `historico` (`id`, `aula`, `dia`, `hora`, `profesor`, `descripcion`, `fecha`, `fecha_entrega`, `devolucion`) VALUES (NULL, 'aula1', '4', '8', '".$profesor."', NULL, '2020-05-01', '$fecha_entrega', NULL)";
+
+
+        mysqli_query($conexion,$consulta);
+	mysqli_query($conexion,$consulta2);
+        mysqli_close($conexion);
+        }
+
+?>

@@ -1,0 +1,135 @@
+<?php
+
+
+include_once 'conexion.php';
+
+
+class Proyecto extends DB {
+
+
+	function obtenerdatos(){
+
+		$query = $this->connect()->query('SELECT * FROM historico');
+
+		return $query;
+
+	}
+
+
+
+function obtenerProfesores(){
+
+	date_default_timezone_set('Europe/Madrid');
+        $dia_actual=date("l");
+
+$dias=array('Monday'=>'1',
+	    'Tuesday'=>'2',
+	    'Wednesday'=>'3',
+	    'Thursday'=>'4',
+	    'Friday'=>'5',
+	    'Saturday'=>'6',
+	    'Sunday'=>'7');
+
+$dia_actual=($dias[$dia_actual]);
+
+
+
+	
+ 	$query = $this->connect()->query("select profesor from (SELECT aula,dia,hora,profesor,descripcion, 'normal' as origen FROM reservas where dia=$dia_actual union all select aula,dia,hora,profesor,unidades as descripcion, 'reserva_x' as origen FROM reservas_x where dia=$dia_actual ) tabla group by profesor");
+	return $query;
+
+}
+
+
+function obtenerreservas($profesor){
+
+	date_default_timezone_set('Europe/Madrid');
+	$dia_actual=date("l");
+
+$dias=array('Monday'=>'1',
+            'Tuesday'=>'2',
+            'Wednesday'=>'3',
+            'Thursday'=>'4',
+            'Friday'=>'5',
+            'Saturday'=>'6',
+            'Sunday'=>'7');
+
+$dia_actual=($dias[$dia_actual]);
+	//$query = $this->connect()->query("SELECT * FROM `reservas_x` WHERE dia = '$dia_actual' and profesor = '$profesor'");
+        $query = $this->connect()->query("select id,aula,dia,hora,profesor,descripcion from (SELECT id,aula,dia,hora,profesor,descripcion, 'normal' as origen FROM reservas where dia='$dia_actual' and profesor='$profesor' union all select id,aula,dia,hora,profesor,unidades as descripcion, 'reserva_x' as origen FROM reservas_x where dia='$dia_actual' and profesor='$profesor' )tabla");
+
+	return $query;
+}
+
+
+function obtenerdevoluciones2($profesor2){
+
+        date_default_timezone_set('Europe/Madrid');
+        $dia_actual=date("l");
+
+$dias=array('Monday'=>'1',
+            'Tuesday'=>'2',
+            'Wednesday'=>'3',
+            'Thursday'=>'4',
+            'Friday'=>'5',
+            'Saturday'=>'6',
+            'Sunday'=>'7');
+
+$dia_actual=($dias[$dia_actual]);
+
+        $query = $this->connect()->query("SELECT * FROM `devoluciones` WHERE dia like '$dia_actual' and profesor like '$profesor2'");
+        return $query;
+
+}
+
+
+function obtenerhistorico(){
+
+
+	$query = $this->connect()->query("SELECT * FROM `historico`");
+
+	return $query;
+
+
+
+}
+
+
+function obtenerdevoluciones(){
+
+	 date_default_timezone_set('Europe/Madrid');
+        $dia_actual=date("l");
+
+$dias=array('Monday'=>'1',
+            'Tuesday'=>'2',
+            'Wednesday'=>'3',
+            'Thursday'=>'4',
+            'Friday'=>'5',
+            'Saturday'=>'6',
+            'Sunday'=>'7');
+
+$dia_actual=($dias[$dia_actual]);
+
+
+	$query = $this->connect()->query("SELECT DISTINCT profesor FROM devoluciones WHERE dia LIKE '$dia_actual'");
+
+	return $query;
+
+
+
+
+}
+
+
+/*
+function realizarinserccion($insertar1){
+
+	$query = $this->connect()->query("INSERT INTO `devoluciones`(`id`, `aula`, `dia`, `hora`, `profesor`, `fecha`, `descripcion`, `devolucion`) VALUES ('$id','$aula','$hora','$profesor','$fecha','$descripcion','')");
+
+	return $query;
+
+}
+*/
+
+}
+?>
